@@ -78,7 +78,7 @@ Page({
     })
   },
   
-  
+  // 确认创建按钮
   cfmBtnClick: function() {
     var that = this;
     if (this.data.course_info == '' || this.data.name == '' || this.data.index1 == '' || this.data.index2 == '' ||
