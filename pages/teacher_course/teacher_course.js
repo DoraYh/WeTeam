@@ -12,21 +12,21 @@ Page({
     student_ids:'',
     team_id:''
   },
-
+  // 修改课程组队信息
   modify_info: function() {
     var temp = this.data.course_id;
     wx.navigateTo({
       url: "../course_info/course_info?course_id=" + temp,
     })
   },
-
+  // 查看某个队伍的详情
   check_team: function(e) {
     var temp = e.currentTarget.dataset.id;
     wx.navigateTo({
       url: '../teacher_team_info/teacher_team_info?team_id=' + temp,
     })
   },
-
+  // 删除该课程
   deleteCourse: function() {
     var that = this;
     wx.showModal({
@@ -49,6 +49,7 @@ Page({
                 showCancel: false,
                 content: '课程删除成功！',
                 success: function (res) {
+                  // 删除成功后，需要相应的修改当前该教师参与的课程情况
                   if (res.confirm) {
                     var all_course = that.data.attended_course_ids.split("@");
                     var index = all_course.indexOf(that.data.course_id);
@@ -82,7 +83,7 @@ Page({
       }
     })
   },
-
+  // 打印组队信息
   printGroup: function() {
     var temp = this.data.course_id;
     wx.navigateTo({
@@ -125,6 +126,7 @@ Page({
                 header: {
                   'content-type': 'application/json'
                 },
+                // 由于组队信息过长，缩略信息只显示前27位字符
                 success: function (res) {
                   var modify = res.data.team_members_id
                   if (modify.length > 27) {
@@ -148,7 +150,7 @@ Page({
         }
       },
     })
-    // 当前老师创建的课程
+    // 获取当前老师创建的课程
     wx.request({
       url: 'http://jihanyang.cn:8080/get_user',
       method: 'GET',

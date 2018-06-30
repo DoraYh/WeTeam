@@ -13,6 +13,7 @@ Page({
   /**
    * 生命周期函数--监听页面加载
    */
+  // 这一部分直接调用student_course中的相同代码即可
   onLoad: function (option) {
     var that = this;
     wx.request({
@@ -22,6 +23,7 @@ Page({
       },
       method: 'GET',
       success: function (res) {
+        // 获取课程相关信息
         if (res.data == "Cannot find this course") { }
         else {
           that.setData({

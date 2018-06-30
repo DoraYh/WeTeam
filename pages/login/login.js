@@ -25,7 +25,7 @@ Page({
   passWdInput:function(e) {
     this.setData({password:e.detail.value})
   },
-
+  // 点击登录按钮事件
   loginBtnClick:function() {
     var that = this;
     if (that.data.username == "" || that.data.student_id == "" || that.data.password == "") {
@@ -92,6 +92,7 @@ Page({
                 profile_photo: that.data.userInfo.avatarUrl,
                 attended_course_ids: 'None'
               },
+              // 将当前登录的用户信息存入缓存
               success: function(Res) {
                 console.log(Res);
                 wx.setStorageSync('user_id', Res.data.student_id);

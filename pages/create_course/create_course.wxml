@@ -5,7 +5,7 @@
   <text class = 'title'>课程名字</text>
   <input class="courseName" name = "name" placeholder="请输入课程名" bindinput="bindCourseName"></input>
 
-
+  <!-- 上课时间被拆分成了多个picker -->
   <view class="courseTime">
     <text class = 'title'>上课时间</text>
     <picker bindchange="bindPickerChange1" value="{{index1}}" range="{{array1}}">
@@ -27,8 +27,7 @@
     </picker>
   </view>
 
-
-
+  <!-- 组队时间被拆分成了多个picker -->
   <view class="startEndTime">
     <text class = 'title'>组队起止时间</text>
     <picker mode="date" value="{{start_time}}" start="2015-09-01" end="2030-09-01" bindchange="bindDateChange1">

@@ -13,7 +13,7 @@ Page({
 
   onLoad: function (options) {
     var that = this;
-
+    // 获取当前登录老师的信息
     wx.request({
       url: 'http://jihanyang.cn:8080/get_user',
       method: 'GET',
@@ -31,9 +31,9 @@ Page({
       username: wx.getStorageSync('username'),
       attended_course_ids: wx.getStorageSync('attended_id')
     })
-
+    // 获取当前老师创建的课程，拆分成列表
     var all_course = that.data.attended_course_ids.split("@");
-
+    // 逐个获取参与课程的信息
     for (var i = 0; i < all_course.length; i++) {
       wx.request({
         url: 'http://jihanyang.cn:8080/get_course',
@@ -42,7 +42,9 @@ Page({
         },
         method: 'GET',
         success: function (res) {
+          // 找不到相应的课程
           if (res.data == "Cannot find this course") { }
+          // 获取相应的课程信息
           else {
             var temp = {
               id: res.data.course_id,
@@ -59,7 +61,6 @@ Page({
         },
       })
     }
-
 
     if (app.globalData.userInfo) {
       this.setData({
@@ -96,13 +97,13 @@ Page({
       hasUserInfo: true
     })
   },
-
+  // 跳转至创建课程
   createCourse: function() {
     wx.navigateTo({
       url: '../create_course/create_course',
     })
   },
-
+  // 跳转至课程详情
   check_course: function (e) {
     var temp = e.currentTarget.dataset.id;
     wx.navigateTo({
