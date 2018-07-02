@@ -131,6 +131,7 @@ Page({
                         'course_list': []
                     })
                     for (var i = 0; i < course_ids.length; i++) {
+                        // 对获取到的course_ids，用一个循环不断请求获取该课程的信息
                         wx.request({
                             url: 'http://jihanyang.cn:8080/get_course',
                             data: { course_id: course_ids[i] },
@@ -141,6 +142,7 @@ Page({
                             success: function (res) {
                                 if (res.statusCode == 200) {
                                     console.log(res.data)
+                                    // 将获取的信息封装成一个对象
                                     var course_obj = {
                                         teacher_id: res.data.teacher_id,
                                         course_info: res.data.course_info,
@@ -168,6 +170,7 @@ Page({
                                                 console.log(res.data)
                                                 course_obj.teacher_name = res.data.username
                                                 that.data.course_list.push(course_obj)
+                                                // 将对象存储至课程列表并进行UI渲染
                                                 that.setData({
                                                     'course_list': that.data.course_list
                                                 })
