@@ -5,8 +5,8 @@ Page({
      * 页面的初始数据
      */
     data: {
-        searchData: '',
-        course_list: [/*{
+        searchData: '',    // 存储搜索框内的输入的数据
+        course_list: [/*{  // 存储搜索页面显示的课程列表，列表中的元素为一个对象
             teacher_id: '',
             teacher_name: '衣杨',
             course_id: '',
@@ -22,14 +22,17 @@ Page({
         }*/]
     },
 
+    // 点击搜索页面内的课程的点击触发事件
     check_course: function (e) {
         var that = this
         console.log("当前索引为 " + e.currentTarget.dataset.index)
+        // 弹框请求是否加入该课程
         wx.showModal({
             title: '提示',
             content: '请问您是否要加入该课程',
             success: function (res) {
                 if (res.confirm) {
+                    // 跳转至学生课程页面
                     wx.navigateTo({
                         url: "../student_course/student_course?courseIndex=" + JSON.stringify(that.data.course_list[e.currentTarget.dataset.index].course_id)
                     })
@@ -47,9 +50,11 @@ Page({
         var that = this
         // 获取本地缓存中用户在搜索框输入的内容
         var search_data = wx.getStorageSync('searchData')
+        // 存储在本地变量中
         that.setData({
             'searchData': search_data.searchData,
         })
+        // 对之前学生主页输入的搜索信息对数据库发出查询课程的请求
         wx.request({
             url: 'http://jihanyang.cn:8080/get_course',
             data: {
@@ -61,9 +66,11 @@ Page({
             },
             success: function (res) {
                 console.log(res.data)
+                // 清空课程列表
                 that.setData({
                     course_list: []
                 })
+                // 将搜索到的课程数据一个个存入一个对象中并存储在课程列表中
                 for (var i = 0; i < res.data.length; i++) {
                     var course_obj = {
                         teacher_id: res.data[i].teacher_id,

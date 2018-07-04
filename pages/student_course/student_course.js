@@ -1,16 +1,19 @@
 var util = require('../../utils/util.js')
 
 Page({
+    // 学生页面的全局变量
     data: {
-        hidden_modal: true,
-        newteam_team_info: '',
-        newteam_max_num: '',
-        passed_course_id: '',
+        hidden_modal: true,  // 弹框是否显示
+        newteam_team_info: '',  // 输入框内队伍信息
+        newteam_max_num: '',  // 输入框内最大队伍人数
+        passed_course_id: '',  // 传递的课程id信息
+        // 学生个人信息
         student_info: {
             student_id: '',
             username: '',
             attended_course_ids: ''
         },
+        // 课程信息
         course_info: {
             teacher_id: '',
             course_info: '',
@@ -25,6 +28,7 @@ Page({
             team_ids: '',
             student_ids: ''
         },
+        // 我的队伍信息
         my_team: {
             team_id: '',
             team_leader: '',
@@ -32,6 +36,7 @@ Page({
             team_members_id: '',
             team_members: []
         },
+        // 队伍列表
         team_list: []
     },
 
@@ -44,6 +49,7 @@ Page({
         var date_time = date_list[0] + '-' + date_list[1] + '-' + date_list[2]
 
         // 如果自身已经加入了队伍，则不可以创建队伍
+        // 调用访问课程信息接口，从数据库获取课程信息
         wx.request({
             url: 'http://jihanyang.cn:8080/get_course',
             data: {
@@ -56,6 +62,7 @@ Page({
             success: function (res) {
                 console.log(res.data)
                 var flag = false
+                // 判断课程中的学生id中是否有自己的id
                 if (res.data.student_ids != 'None') {
                     var student_ids_dict = JSON.parse(res.data.student_ids)
                     for (var key in student_ids_dict) {
@@ -113,6 +120,7 @@ Page({
         })
     },
 
+    // 输入队伍可加入的最大人数，并保存在newteam_max_num中
     input_typing_number: function (e) {
         var that = this
         that.setData({
@@ -125,6 +133,7 @@ Page({
         var that = this
         if (parseInt(that.data.newteam_max_num) < parseInt(that.data.course_info.min_team) || parseInt(that.data.newteam_max_num) > parseInt(that.data.course_info.max_team)) {
             console.log("输入的最大队伍人数不在课程设置的区间内，不能创建队伍")
+            // 弹框提示成功
             wx.showModal({
                 title: '提示',
                 showCancel: false,
@@ -138,7 +147,7 @@ Page({
             return
         }
 
-        // post提交创建队伍信息
+        // post提交创建队伍信息，将输入框内的所有信息提交到服务器创建队伍
         wx.request({
             url: 'http://jihanyang.cn:8080/add_team',
             data: {
@@ -162,7 +171,7 @@ Page({
                     duration: 2000,
                 })
 
-                // 更新该课程的team_ids
+                // 更新该课程的team_ids，将创建的队伍的id加入到课程的team_ids中
                 var new_team_ids = ''
                 var team_ids_list = that.data.course_info.team_ids.split('@')
                 if (team_ids_list.length == 1 && team_ids_list[0] == 'None') {
@@ -171,7 +180,8 @@ Page({
                     team_ids_list.push(res.data.team_id)
                     new_team_ids = team_ids_list.join('@')
                 }
-                //更改课程中的队伍列表,例如"1@2@3@4"
+
+                //更改课程中的队伍列表,例如"1@2@3@4",即将更改后的team_ids调用modify_team_ids接口
                 wx.request({
                     url: 'http://jihanyang.cn:8080/modify_team_ids',
                     data: {
@@ -200,6 +210,7 @@ Page({
                     student_to_team[that.data.student_info.student_id] = res.data.team_id
                     json_student_ids = JSON.stringify(student_to_team)
                 }
+                // 并将更改后的json_student_ids将课程的student_ids在服务器发出请求，要求更改
                 wx.request({
                     url: 'http://jihanyang.cn:8080/course_modify_student',
                     data: {
@@ -297,6 +308,7 @@ Page({
             },
             success: function (res) {
                 console.log(res.data)
+                // 调用get_course接口，通过student_ids来判断这个学生是否加入队伍
                 var keys_flag = false
                 if (res.data.student_ids != 'None') {
                     var student_ids_dict = JSON.parse(res.data.student_ids)
@@ -334,6 +346,7 @@ Page({
                             }
                         }
                     })
+                    // 如果队伍列表中的所有队伍中可加入人数仍>0,则将flag设为false
                 } else {
                     var flag = true
                     for (var i = 0; i < that.data.team_list.length; i++) {
@@ -356,7 +369,6 @@ Page({
                                 }
                             }
                         })
-
                         return
                     }
 
@@ -397,6 +409,7 @@ Page({
                                 student_to_team[that.data.student_info.student_id] = res.data.team_id
                                 json_student_ids = JSON.stringify(student_to_team)
                             }
+                            // 并将更改后的student_ids向服务器提出请求，更改课程的student_ids
                             wx.request({
                                 url: 'http://jihanyang.cn:8080/course_modify_student',
                                 data: {
@@ -439,6 +452,7 @@ Page({
                                 team_list: that.data.team_list
                             })
                             var flag = true
+                            // 跳转至队伍信息页面
                             wx.navigateTo({
                               url: '../team_info/team_info?teamIndex=' + JSON.stringify(that.data.my_team) + "&hasJoin=" + flag + "&course_id=" + that.data.course_info.course_id,
                             })
@@ -503,6 +517,7 @@ Page({
                                     },
                                     success: function (res) {
                                         console.log(res.data)
+                                        // 判断是否为队长，如果是队长需要将队长转移为队伍内下一个人
                                         var members = res.data.team_members_id.split('@')
                                         var change_leader = ''
                                         var leader = res.data.leader_id
@@ -517,7 +532,7 @@ Page({
                                             }
                                         }
 
-                                        // 如果为队长，转让队长
+                                        // 如果为队长，转让队长，通过POST请求更改队伍的信息
                                         if (parseInt(leader) == parseInt(that.data.student_info.student_id)) {
                                             wx.request({
                                                 url: 'http://jihanyang.cn:8080/modify_team',
@@ -533,7 +548,7 @@ Page({
                                                     console.log(res.data)
 
                                                     // 并退出队伍
-                                                    // 具体操作为POST请求到服务器，在课程中更改学生的信息
+                                                    // 具体操作为POST请求到服务器，在课程中更改学生的信息，具体为学生的attended_ids
                                                     var attended_id = wx.getStorageSync('attended_id')
                                                     var course_ids = attended_id.split('@')
                                                     var deleted_course = ''
@@ -545,7 +560,7 @@ Page({
                                                         deleted_course = course_ids.join('@')
                                                     }
 
-                                                    // 更改课程的学生和对应的队伍信息
+                                                    // 更改该课程的学生和对应的队伍信息，具体为course的student_ids
                                                     var json_student_ids = {}
                                                     if (that.data.course_info.student_ids == 'None') {
                                                         json_student_ids[that.data.student_info.student_id] = "0"
@@ -555,6 +570,7 @@ Page({
                                                         student_to_team[that.data.student_info.student_id] = "0"
                                                         json_student_ids = JSON.stringify(student_to_team)
                                                     }
+                                                    // 向服务器发出POST请求更改课程已加入的学生，即student_ids
                                                     wx.request({
                                                         url: 'http://jihanyang.cn:8080/course_modify_student',
                                                         data: {
@@ -573,7 +589,7 @@ Page({
                                                         }
                                                     })
 
-                                                    // 更改学生已加入的课程信息
+                                                    // 更改学生已加入的课程信息，即通过POST请求更改学生的attended_course_ids
                                                     wx.request({
                                                         url: 'http://jihanyang.cn:8080/modify_attended_course',
                                                         data: {
@@ -607,6 +623,7 @@ Page({
                                             var deleted_index = team_members_id_list.indexOf(that.data.student_info.student_id)
                                             team_members_id_list.splice(deleted_index, 1)
                                             team_members_id_list = team_members_id_list.join('@')
+                                            // 通过POST请求更改队伍内的team_members_id
                                             wx.request({
                                                 url: 'http://jihanyang.cn:8080/modify_team',
                                                 data: {
@@ -633,7 +650,7 @@ Page({
                                                         deleted_course = course_ids.join('@')
                                                     }
 
-                                                    // 更改学生的已加入课程信息
+                                                    // 更改学生的已加入课程信息，即通过POST请求更改学生的attended_course_ids
                                                     wx.request({
                                                         url: 'http://jihanyang.cn:8080/modify_attended_course',
                                                         data: {
@@ -666,6 +683,7 @@ Page({
                                                         student_to_team[that.data.student_info.student_id] = "0"
                                                         json_student_ids = JSON.stringify(student_to_team)
                                                     }
+                                                    // 通过POST请求更改课程的已加入学生的student_ids
                                                     wx.request({
                                                         url: 'http://jihanyang.cn:8080/course_modify_student',
                                                         data: {
@@ -707,6 +725,7 @@ Page({
                                 }
 
                                 // 更改学生的已加入队伍的信息，但不需要更改课程的学生对应队伍信息，因为没有加入队伍
+                                // 通过POST请求更改学生的attended_course_ids
                                 wx.request({
                                     url: 'http://jihanyang.cn:8080/modify_attended_course',
                                     data: {
@@ -740,6 +759,7 @@ Page({
                             if (counter == 1) {
                                 student_ids_temp = "None"
                             }
+                            // 通过POST请求并更改该课程的已加入的student_ids
                             wx.request({
                                 url: 'http://jihanyang.cn:8080/course_modify_student',
                                 data: {
@@ -769,15 +789,18 @@ Page({
         })
     },
 
+    // 点击进入自己的队伍页面
     check_myteam: function (e) {
       var that = this
       var flag = true
       if (that.data.my_team.team_id != "") {
           if(that.data.my_team.team_leader == that.data.student_info.student_id) {
+            // 如果为队长则跳转至队长页面
             wx.navigateTo({
               url: "../leader_info/leader_info?teamIndex=" + JSON.stringify(that.data.my_team) + "&course_id=" + that.data.course_info.course_id
             })
           } else {
+            // 如果为队员则跳转至队员页面
             wx.navigateTo({
               url: "../team_info/team_info?teamIndex=" + JSON.stringify(that.data.my_team) + "&hasJoin=" + flag + "&course_id=" + that.data.course_info.course_id
             })
@@ -796,11 +819,11 @@ Page({
       }
     },
 
-    // 点进队伍的详细信息
+    // 点击进入某一个队伍的详情的事件触发函数
     join_team: function (e) {
         var that = this
         console.log("当前索引为 " + e.currentTarget.dataset.index)
-
+        // 通过GET请求获取该课程的所有student_ids信息
         wx.request({
             url: 'http://jihanyang.cn:8080/get_course',
             data: {
@@ -812,6 +835,7 @@ Page({
             },
             success: function (res) {
                 console.log(res.data)
+                // 如果student_ids有我的id，则说明我已经加入了队伍
                 var flag = false
                 var get_my_team = ''
                 if (res.data.student_ids != 'None') {
@@ -840,10 +864,12 @@ Page({
                             console.log(res.data)
                             if (res.data.leader_id == that.data.student_info.student_id) {
                                 wx.navigateTo({
+                                // 如果为队长则跳转至队长页面
                                     url: "../leader_info/leader_info?teamIndex=" + JSON.stringify(that.data.team_list[e.currentTarget.dataset.index]) + "&course_id=" + that.data.course_info.course_id
                                 })
                             } else {
                                 wx.navigateTo({
+                                // 如果为队员则跳转至队员页面
                                     url: "../team_info/team_info?teamIndex=" + JSON.stringify(that.data.team_list[e.currentTarget.dataset.index]) + "&hasJoin=" + flag + "&course_id=" + that.data.course_info.course_id
                                 })
                             }
